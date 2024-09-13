@@ -17,9 +17,31 @@ const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 camera.position.z = 10;
 const scene = new THREE.Scene();
 
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+const geometry = new THREE.IcosahedronGeometry(5, 2);
+const material = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    flatShading: true,
+});
 
-renderer.render(scene, camera);
+const wireMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    wireframe: true,
+});
+
+const weirdShape = new THREE.Mesh(geometry, material);
+const weirdShape2 = new THREE.Mesh(geometry, wireMaterial);
+weirdShape.add(weirdShape2);
+scene.add(weirdShape);
+
+const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x000000, 0.2);
+scene.add(hemisphereLight);
+
+const animate = () => {
+    requestAnimationFrame(animate);
+    weirdShape.rotation.x += 0.001;
+    weirdShape.rotation.y += 0.001;
+    weirdShape.rotation.z += 0.001;
+    renderer.render(scene, camera);
+};
+
+animate();
