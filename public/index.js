@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import RAPIER from 'https://cdn.skypack.dev/@dimforge/rapier3d-compat@0.11.2';
 
 import { getMouseBall, getBody } from './getBodies.js';
+import { getFloor } from './floor.js';
 console.log("getBodies imported");
 import { EffectComposer } from "jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "jsm/postprocessing/RenderPass.js";
@@ -29,8 +30,17 @@ const near = 0.1;
 const far = 100;
 
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-camera.position.z = 50;
+camera.position.set(0, 50, 50);
+camera.lookAt(new THREE.Vector3(0, 0, 0));
 const scene = new THREE.Scene();
+
+// Add Axes Helper
+const axesHelper = new THREE.AxesHelper(100);
+scene.add(axesHelper);
+
+// Add Grid Helper
+const gridHelper = new THREE.GridHelper(1000, 1000);
+scene.add(gridHelper);
 
 // post-processing
 const renderScene = new RenderPass(scene, camera);
@@ -39,6 +49,9 @@ const bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 2.0, 0.0
 const composer = new EffectComposer(renderer);
 composer.addPass(renderScene);
 composer.addPass(bloomPass);
+
+const { mesh: floor, physics: floor_physics } = getFloor(RAPIER, world);
+scene.add(floor);
 
 const numBodies = 10;
 const bodies = [];
@@ -54,6 +67,10 @@ scene.add(mouseBall.mesh);
 const hemiLight = new THREE.HemisphereLight(0x00bbff, 0xaa00ff);
 hemiLight.intensity = 0.2;
 scene.add(hemiLight);
+
+// Add Ambient Light for better illumination
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
 
 function animate() {
     requestAnimationFrame(animate);
@@ -76,4 +93,5 @@ function handleMouseMove(evt) {
     mousePos.x = (evt.clientX / window.innerWidth) * 2 - 1;
     mousePos.y = -(evt.clientY / window.innerHeight) * 2 + 1;
 }
+console.log(scene.children);
 window.addEventListener('mousemove', handleMouseMove, false);
